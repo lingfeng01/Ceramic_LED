@@ -3,9 +3,10 @@
 #include <WiFiUdp.h>
 WiFiUDP ntpudp;
 
-int8_t timeZone = 8 * 60 * 60;
+int32_t timeZone = 8 * 3600;
 const PROGMEM char *ntpServer = "ntp1.aliyun.com";
-NTPClient timeClient(ntpudp, ntpServer, timeZone * 3600, 60000);
+NTPClient timeClient(ntpudp, ntpServer, timeZone, 60000);
+
 int Hour;
 int Minute;
 int Second;
@@ -25,41 +26,21 @@ void setup()
 
 void loop()
 {
-  int i = 0;
-  int j = 0;
   // put your main code here, to run repeatedly :
-  for (j = 1; j < 5; j++)
-  {
-    for (i = 0; i < 10; i++)
-    {
-      LED_Set_num(j, i);
-      delay(1000);
-    }
-    LED_Set_num(j, 10);
-  }
-
-  // for (i = 0; i < 25; i++)
+  // int i = 0;
+  // int j = 0;
+  //
+  // for (j = 1; j < 5; j++)
   // {
-  //   if (i == 0 || i == 1 || i == 18 || i == 19 || i == 20 || i == 21 || i == 22 || i == 23)
+  //   for (i = 0; i < 10; i++)
   //   {
-  //     loin(1, i);
+  //     LED_Set_num(j, i);
+  //     delay(1000);
   //   }
-  //   else if (i == 2 || i == 3 || i == 17 || i == 18)
-  //   {
-  //     loin(2, i);
-  //   }
-  //   else if (i == 4 || i == 5 || i == 14 || i == 15)
-  //   {
-  //     loin(3, i);
-  //   }
-
-  //   else if (i == 6 || i == 7 || i == 8 || i == 9 || i == 10 || i == 11 || i == 12 || i == 13)
-  //   {
-  //     loin(4, i);
-  //   }
-  //   delay(1000);
+  //   LED_Set_num(j, 10);
   // }
-  // loin(3, 1);
+  LED_Set_Time();
+  delay(1000);
 }
 
 void GPIO_Init()
@@ -91,9 +72,47 @@ void time_Inti()
 {
   timeClient.begin();
   timeClient.update();
+
   Hour = timeClient.getHours();
   Minute = timeClient.getMinutes();
   Second = timeClient.getSeconds();
+
+  Serial.print("Time:");
+  Serial.print(Hour);
+  Serial.print(":");
+  Serial.print(Minute);
+  Serial.print(":");
+  Serial.println(Second);
+}
+
+void LED_Set_Time()
+{
+  Hour = timeClient.getHours();
+  Minute = timeClient.getMinutes();
+  Second = timeClient.getSeconds();
+  int h1 = Hour / 10;
+  int h2 = Hour % 10;
+  int m1 = Minute / 10;
+  int m2 = Minute % 10;
+  int s1 = Second / 10;
+  int s2 = Second % 10;
+  if (h1 == 0)
+  {
+    h1 = 10;
+  }
+  if (m1 == 0)
+  {
+    m1 = 10;
+  }
+  if (s1 == 0)
+  {
+    s1 = 10;
+  }
+
+  LED_Set_num(1, h1);
+  LED_Set_num(2, h2);
+  LED_Set_num(3, m1);
+  LED_Set_num(4, m2);
   Serial.print("Time:");
   Serial.print(Hour);
   Serial.print(":");

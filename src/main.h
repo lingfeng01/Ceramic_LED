@@ -9,5 +9,6 @@
 void GPIO_Init();
 void Wifi_Inti();
 void time_Inti();
+void LED_Set_Time();
 
 #endif // __MAIN_H__
