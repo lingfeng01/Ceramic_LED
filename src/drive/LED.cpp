@@ -1,6 +1,7 @@
 #include "LED.h"
 
-uint8_t shuzi[11] = {
+bool djs_flag = 1;
+uint8_t Code_table1[12] = {
     0x40, // 0
     0x4F, // 1
     0x22, // 2
@@ -11,9 +12,10 @@ uint8_t shuzi[11] = {
     0x4E, // 7
     0x00, // 8
     0x04, // 9
-    0xFF  // null
+    0xFF, // null
+    0x3F, // -
 };
-uint8_t shuzi2[11] = {
+uint8_t Code_table2[12] = {
     0x40, // 0
     0x4F, // 1
     0x12, // 2
@@ -24,40 +26,16 @@ uint8_t shuzi2[11] = {
     0x4E, // 7
     0x00, // 8
     0x04, // 9
-    0xFF  // null
+    0xFF, // null
+    0x3F, // -
 };
-
-uint8_t lo[25] = {
-    0x3F,
-    0xFF,
-    0x3F,
-    0xFF,
-    0x3F,
-    0xFF,
-    0x3F,
-    0xFF,
-    0x7D,
-    0xFF,
-    0x7B,
-    0xFF,
-    0x77,
-    0xFF,
-    0x77,
-    0xFF,
-    0x77,
-    0xFF,
-    0x77,
-    0xFF,
-    0x6F,
-    0xFF,
-    0x5F,
-    0xFF};
 
 uint8_t lingfeng[9] = {
     0x71,
     0x77,
     0x38,
-    0x3E};
+    0x3E,
+};
 
 uint8_t Hex_to_cx(uint8_t hex, int i)
 {
@@ -74,7 +52,7 @@ uint8_t Hex_to_cx(uint8_t hex, int i)
 }
 void LED_Clear()
 {
-    delay(100);
+    delay(10);
     LED_Set_num(1, 10);
     delay(10);
     LED_Set_num(2, 10);
@@ -118,7 +96,7 @@ void LED_Set_num(int x, int num)
     {
         for (i = 7; i >= 0; i--)
         {
-            digitalWrite(LED_DS, Hex_to_cx(shuzi2[num], i));
+            digitalWrite(LED_DS, Hex_to_cx(Code_table2[num], i));
 
             if (x == 1)
             {
@@ -142,7 +120,7 @@ void LED_Set_num(int x, int num)
     {
         for (i = 7; i >= 0; i--)
         {
-            digitalWrite(LED_DS, Hex_to_cx(shuzi[num], i));
+            digitalWrite(LED_DS, Hex_to_cx(Code_table1[num], i));
 
             if (x == 1)
             {
@@ -166,30 +144,86 @@ void LED_Set_num(int x, int num)
     display();
 }
 
-void loin(int x, int num)
+void loin(int x)
+{
+}
+
+void countdown(int second)
 {
 
-    int i = 0;
-    for (i = 7; i >= 0; i--)
+    if (second != 0)
     {
-        digitalWrite(LED_DS, Hex_to_cx(lo[num], i));
+        djs_flag = 1;
+        for (int i = second; i >= 0; i--)
+        {
+            int minutes = i / 60;
+            int secs = i % 60;
 
-        if (x == 1)
-        {
-            R1_CP();
+            // 显示分钟的十位数和个位数
+
+            if (minutes / 10 == 0)
+            {
+                LED_Set_num(1, 10); // 高位为0时显示为10
+            }
+            else
+            {
+                LED_Set_num(1, minutes / 10);
+            }
+
+            if (minutes % 10 == 0 && minutes / 10 == 0)
+            {
+                LED_Set_num(2, 10); // 高位为0时显示为10
+            }
+            else
+            {
+                LED_Set_num(2, minutes % 10);
+            }
+
+            // 显示秒的十位数和个位数
+
+            if (secs / 10 == 0)
+            {
+                LED_Set_num(3, 10); // 高位为0时显示为10
+            }
+            else
+            {
+                LED_Set_num(3, secs / 10);
+            }
+
+            if (secs % 10 == 0 && secs / 10 == 0)
+            {
+                LED_Set_num(4, 10); // 高位为0时显示为10
+            }
+            else
+            {
+                LED_Set_num(4, secs % 10);
+            }
+
+            esp_delay(1000); // 延迟1秒
         }
-        else if (x == 2)
+        Serial.println("倒计时结束");
+        for (int j = 0; j < 5; j++)
         {
-            R2_CP();
+            LED_Set_num(1, 11);
+            LED_Set_num(2, 11);
+            LED_Set_num(3, 11);
+            LED_Set_num(4, 11);
+            esp_delay(500);
+            LED_Set_num(1, 10);
+            LED_Set_num(2, 10);
+            LED_Set_num(3, 10);
+            LED_Set_num(4, 10);
+            esp_delay(500);
         }
-        else if (x == 3)
-        {
-            L1_CP();
-        }
-        else if (x == 4)
-        {
-            L2_CP();
-        }
+        djs_flag = 0;
+    }
+    else
+    {
+        djs_flag = 1;
+        LED_Set_num(1, 10);
+        LED_Set_num(2, 10);
+        LED_Set_num(3, 10);
+        LED_Set_num(4, 10);
     }
 }
 
